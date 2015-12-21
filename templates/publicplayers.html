@@ -62,6 +62,11 @@
 										<div class="player">
 											<h3>{{player.name}}</h3>
 												<p>
+													<a href = "{{url_for('editPlayer', sport_id = sports.id, player_id = player.id)}}">
+														Edit Player
+													</a>
+												</p>
+												<p>
 													<img src = "{{player.picture}}" alt = "{{player.name}}" height = 50px width=50px>
 												</p>
 										</div>

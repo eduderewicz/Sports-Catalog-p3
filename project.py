@@ -187,6 +187,32 @@ def newPlayer(sport_id):
         return render_template('newPlayer.html', sport_id = sport_id, positions = positions)
 
 #edit a player
+@app.route('/sport/<int:sport_id>/players/<int:player_id>/edit/', methods = ['GET','POST'])
+def editPlayer(sport_id, player_id):
+    sport = session.query(Sport).filter_by(id = sport_id).one()
+    playerToEdit = session.query(Player).filter_by(id = player_id).one()
+    positions = session.query(Position).filter_by(sport_id = sport_id).all()
+
+
+    if request.method == 'POST':
+        if request.form['name']:
+            playerToEdit.name = request.form['name']
+        if request.form['picture']:
+            playerToEdit.picture = request.form['picture']
+        if request.form['position']:
+            playerToEdit.position_id = request.form['position']
+
+
+        
+        flash('Played Successfully Edited')
+        return redirect(url_for('showPlayers', sport_id = sport_id))
+    else:
+        return render_template('editPlayer.html', sport = sport, player = playerToEdit, positions = positions)
+
+
+
+
+
 
 #delete a player
 
