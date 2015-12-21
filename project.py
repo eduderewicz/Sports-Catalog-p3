@@ -209,13 +209,19 @@ def editPlayer(sport_id, player_id):
     else:
         return render_template('editPlayer.html', sport = sport, player = playerToEdit, positions = positions)
 
-
-
-
-
-
 #delete a player
+@app.route('/sport/<int:sport_id>/players/<int:player_id>/delete/', methods = ['GET', 'POST'])
+def deletePlayer(sport_id,player_id):
+    sport = session.query(Sport).filter_by(id = sport_id).one()
+    playerToDelete = session.query(Player).filter_by(id = player_id).one()
 
+    if request.method == 'POST':
+        session.delete(playerToDelete)
+        session.commit
+        flash ('%s Successfully Deleted' % playerToDelete.name )
+        return redirect(url_for('showPlayers', sport_id = sport_id))
+    else:
+        return render_template ('deletePlayer.html', sport = sport, player = playerToDelete)
 
 
 
