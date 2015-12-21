@@ -122,7 +122,29 @@ def editPosition(sport_id, position_id):
 
 
 #delete position (for a sport)
+@app.route('/sport/<int:sport_id>/positions/<int:position_id>/delete/', methods = ['GET', 'POST'])
+def deletePosition(sport_id, position_id):
+    sport = session.query(Sport).filter_by(id = sport_id).one()
+    positionToDelete = session.query(Position).filter_by(id = position_id).one()
 
+    if request.method == 'POST':
+        #delete players at that position before deleting position 
+
+        playerCount = session.query(Player).filter_by(position_id = position_id).count()
+        for i in range(1,playerCount + 1):
+            playerToDelete = session.query(Player).filter_by(position_id = position_id).first()            
+            if playerToDelete.position_id == positionToDelete.id:
+                session.delete(playerToDelete)
+                flash ('%s Successfully Deleted' % playerToDelete.name )
+                session.commit
+
+        #delete position
+        session.delete(positionToDelete)
+        flash ('%s Successfully Deleted' % positionToDelete.name)
+        session.commit()
+        return redirect(url_for('showPlayers', sport_id = sport_id))
+    else:
+        return render_template ('deletePosition.html', sport = sport, position = positionToDelete )
 
 # Show all players
 @app.route('/sport/<int:sport_id>/')
@@ -163,6 +185,10 @@ def newPlayer(sport_id):
         return redirect(url_for('showPlayers', sport_id = sport_id))
     else:  
         return render_template('newPlayer.html', sport_id = sport_id, positions = positions)
+
+#edit a player
+
+#delete a player
 
 
 
