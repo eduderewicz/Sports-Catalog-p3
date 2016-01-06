@@ -15,8 +15,7 @@ start vagrant
 ssh into vagrant  
 `vagrant ssh`   
 
-clone repo: 
-
+clone repo:  
 `git clone https://github.com/eduderewicz/Sports-Catalog-p3.git`  
 
 CD into directory 
@@ -27,9 +26,9 @@ Run the following commands to create the database
 populate with some sample data 
 `python lotsofsports.py` 
 
-run the project 
+run the project   
 `python project.py`
 
-access the project via web browser 
+access the project via web browser  
 `http://localhost:5000/`
 
