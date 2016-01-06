@@ -20,10 +20,10 @@ clone repo:
 
 CD into directory 
 
-Run the following commands to create the database
+Run the following commands to create the database 
 `python database_setup.py` 
 
-populate with some sample data 
+populate with some sample data  
 `python lotsofsports.py` 
 
 run the project   
