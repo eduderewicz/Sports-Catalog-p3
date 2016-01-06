@@ -260,7 +260,7 @@ def addPosition(sport_id):
         
     # if this user is not the creator of the sport, they cannot delete the positions, redirect to the logged in players page
     if creator.id != login_session['user_id']:
-        flash('You cannot edit a player you did not create')
+        flash('You cannot add a position for a sport you did not create')
         return redirect(url_for('showPlayers', sport_id = sport_id))
  
     else:
