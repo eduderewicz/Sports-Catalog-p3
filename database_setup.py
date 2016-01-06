@@ -36,6 +36,8 @@ class Position(Base):
     name = Column(String(250), nullable = False)
     sport_id = Column(Integer, ForeignKey('sport.id'))
     sport = relationship(Sport)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship(User)
     @property
     def serialize(self):
         '''return object data in easily serializeable format'''
@@ -54,6 +56,8 @@ class Player(Base):
     position = relationship(Position)
     sport_id = Column(Integer, ForeignKey('sport.id'))
     sport = relationship(Sport)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship(User)
 
     @property
     def serialize(self):
