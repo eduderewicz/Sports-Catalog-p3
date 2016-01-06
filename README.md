@@ -10,8 +10,10 @@ Note to mimic my exact setup: install vagrant and virtual box - https://www.udac
 once vagrant and virtual box are installed
 
 start vagrant
+
   `vagrant up`  
 ssh into vagrant  
+
  `vagrant ssh`   
   
 
