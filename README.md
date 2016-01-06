@@ -15,7 +15,8 @@ start vagrant
 ssh into vagrant  
 `vagrant ssh`   
 
-clone repo:
+clone repo: 
+
 `git clone https://github.com/eduderewicz/Sports-Catalog-p3.git`  
 
 CD into directory 
