@@ -9,20 +9,20 @@ Note to mimic my exact setup: install vagrant and virtual box - https://www.udac
 
 once vagrant and virtual box are installed
 
-start vagrant
+start vagrant 
 `vagrant up`  
 ssh into vagrant  
 `vagrant ssh`   
 
-clone repo:
+clone repo: 
 `git clone https://github.com/eduderewicz/Sports-Catalog-p3.git` 
 
-CD into directory
+CD into directory 
 
-Run the following commands to create the database
+Run the following commands to create the database 
 `python database_setup.py`
 
-populate with some sample data
+populate with some sample data 
 `python lotsofsports.py`
 
 run the project
