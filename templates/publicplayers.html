@@ -4,7 +4,7 @@
 {% include "header.html" %}
 
 		<div class="row banner menu">
-		<div class="col-md-11 col-md-offset-1 padding-none">
+		<div class="col-md-12">
 			<h1>{{ sports.name }}
 			<!---
 			<figure class="creator">
@@ -18,56 +18,50 @@
 	</div>
 
 	<div class="row padding-top padding-bottom">
-		<div class="col-md-1"></div>
-		<div class="col-md-11 padding-none">
-			Login to edit sport name, add/edit positions, add new players
-
+		
+		<div class="col-md-12 padding-none">
+			<a href="{{url_for('showLogin')}}">Login to edit sport name, add/edit positions, add new players</a>
 		</div>
-		<div class="col-md-7"></div>
+		
 	</div>
 
 
 
 
 	{% if positions !=[] %}
-		<div class="row">
-			<div class="col-md-1">
+				<ul id= "positions" class ="row">
+						{% for position in positions %}
+							
+							<li class = "col-md-3">
+									<h2>{{position.name}} 
+										<span>
+											<a href="{{url_for('showLogin')}}">Login to modify</a>
+										</span>
+									</h2>
+
+
+									<ul id="players" class = "row">
+										{% for player in players %}
+											{% if player.position == position %}
+												
+													<li class ="col-md-12"> <h4>{{player.name}}</h4> 
+														<p>
+															<a href="{{url_for('showLogin')}}">Login to modify</a>
+														</p>
+														<p>
+															<img src = "{{player.picture}}" alt = "{{player.name}}" height = 50px width=50px>
+														</p>
+													</li>
+												
+											{% endif %}
+										{% endfor %}
+									</ul>
+							</li>		
+						{% endfor %}
+				</ul>	
 			</div>
-				<div class="col-md-3">
-					{% for position in positions %} 
-							<h2>Position: {{position.name}}</h2>
-								login to edit position
-								
-								
-								login to Delete Position
-									
-								{% for player in players %}
-									{% if player.position == position %}
-										<div class="player">
-											<h3>{{player.name}}</h3>
-												<p>
-													
-														login to Edit Player
-													
-													
-														login to Delete Player
-													
-												</p>
-												<p>
-													<img src = "{{player.picture}}" alt = "{{player.name}}" height = 50px width=50px>
-												</p>
-										</div>
-
-								<br></br>
-									{% endif %}
-								{% endfor %}	
-					{% endfor %}
-				</div>
 				
-		</div>									
+									
 
-
-			<div class="col-md-1"></div>
-		</div>
 	{% endif %}
 {% endblock %}
