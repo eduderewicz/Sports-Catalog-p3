@@ -8,3 +8,26 @@ ul
 h2 span { 
 	font-size:14px; 
 }
+
+.flash {
+	background-color: #FFFF00;
+	width:100%;
+	text-decoration: none;
+}
+
+* {font-family: Dosis, "Helvetica Neue Bold", Helvetica, Arial, sans-serif;
+}
+
+#playerName{
+	color:#223C4A;
+
+}
+#position {
+	color:#202264;
+}
+#sportName {
+	color:#202264;
+}
+body {
+	background-color:#D0D8E1;
+}
