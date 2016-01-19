@@ -17,11 +17,7 @@
 				<div class="form-group">
 					<label for="name">Name:</label>
 					<input type ="text" maxlength="50" class="form-control" name="name" placeholder="Player Name">
-					{% if positions !=[] %}
-							{% for position in positions %}							
-								position_id = {{position.id}}
-							{% endfor %}
-					{% endif %}
+				
 
 					<label for="position">Position:</label>
 					<select name = "position" class="form-control" >
