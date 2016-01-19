@@ -44,7 +44,6 @@ class Position(Base):
         return {
         'id': self.id,
         'name': self.name,
-        'picture':self.picture,
 }
 
 class Player(Base):
@@ -66,7 +65,7 @@ class Player(Base):
                 'id': self.id,
                 'name': self.name,
                 "picture": self.picture,
-                "position": self.position,
+                "position_id": self.position_id,
 
         }
 engine = create_engine('sqlite:///allstars.db')
