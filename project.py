@@ -173,13 +173,25 @@ def gdisconnect():
 
 
 
-# JSON APIs to view Sport Information
-@app.route('/sport/<int:sport_id>/player/JSON')
+# JSON API to view Player Information
+@app.route('/sport/<int:sport_id>/players/JSON')
 def sportPlayerJSON(sport_id):
     sport = session.query(Sport).filter_by(id=sport_id).one()
-    items = session.query(Player).filter_by(
+    players = session.query(Player).filter_by(
         sport_id=sport_id).all()
-    return jsonify(Player=[i.serialize for i in items])
+    return jsonify(Player=[i.serialize for i in players])
+
+#JSON API to view sports information
+@app.route('/sports/JSON')
+def sportJSON():
+    sports = session.query(Sport)
+    return jsonify(Sports=[i.serialize for i in sports])
+
+#JSON API to view positions for a sport
+@app.route('/sport/<int:sport_id>/players/positions/JSON')
+def sportPositionsJSON(sport_id):
+    positions = session.query(Position).filter_by(sport_id=sport_id).all()
+    return jsonify(Positions=[i.serialize for i in positions])
 
 
 
