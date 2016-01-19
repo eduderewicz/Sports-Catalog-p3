@@ -8,8 +8,8 @@
 	</div>
 	<div class="row banner main">
 		<div class="col-md"></div>
-		<div class="col-md-11 padding-none">
-			<h1>Sports</h1>
+		<div class="col-md-11 padding-none" id="sportName">
+			<h1>All Sports</h1>
 		</div>
 	</div>
 	
@@ -47,7 +47,7 @@
 			{% for sport in sports %}
 			<div class = "row padding-top padding-bottom">
 
-				<div class = "col-md-2">
+				<div class = "col-md-2" id="sportName">
 					<a href = "{{url_for('showPlayers', sport_id = sport.id)}}">
 								<!-- <div class="col-md-10 sport-list"> -->
 									<h3>{{sport.name}}</h3>
