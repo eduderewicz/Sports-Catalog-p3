@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
+from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, g
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, User, Sport, Position, Player
@@ -11,6 +11,8 @@ import httplib2
 import json
 from flask import make_response
 import requests
+from functools import wraps
+
 
 app = Flask(__name__)
 
@@ -35,7 +37,7 @@ def showLogin():
     # return "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE=state)
 
-#setup Google oAuth
+# Setup Google oAuth
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     # Validate state token
@@ -194,7 +196,14 @@ def sportPositionsJSON(sport_id):
     return jsonify(Positions=[i.serialize for i in positions])
 
 
-
+# Login Required 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in login_session:
+            return redirect(url_for('showLogin', next = request.url))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Show all Sports
 @app.route('/')
@@ -204,12 +213,12 @@ def showSports():
     sports = session.query(Sport).order_by(asc(Sport.name))
     if 'username' not in login_session:
         return render_template('publicsports.html', sports=sports)
-    #else:
-    
+    # else:
     return render_template('sports.html', sports=sports)
 
 # add new sport
 @app.route('/sports/new/', methods=['GET','POST'])
+@login_required
 def newSport():
     if request.method == 'POST':
         newSport = Sport(
@@ -222,12 +231,19 @@ def newSport():
     else:
         return render_template('newSport.html')
 
-#edit a sport
+# edit a sport
 @app.route('/sport/<int:sport_id>/edit/', methods = ['GET', 'POST'])
+@login_required
 def editSport(sport_id):
     editedSport = session.query(
         Sport).filter_by(id = sport_id).one()
     creator = getUserInfo(editedSport.user_id)
+
+    # if this user is not the creator of the sport, they cannot edit the sport, redirect to the logged in players page
+    if creator.id != login_session['user_id']:
+        flash('You cannot edit a sport you did not create')
+        return redirect(url_for('showPlayers', sport_id = sport_id)) 
+
     if request.method == 'POST':
         if request.form['name']:
             editedSport.name = request.form['name']
@@ -235,27 +251,21 @@ def editSport(sport_id):
             session.commit()
             flash('Sport Successfully Edited %s' % editedSport.name)
             return redirect(url_for('showPlayers', sport_id = sport_id))
-    
-    #if not logged in this page should not be viewable, redirect to public page  
-    if 'username' not in login_session:
-        flash('login to add/edit/delete players')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
         
-    # if this user is not the creator of the sport, they cannot edit the sport, redirect to the logged in players page
-    if creator.id != login_session['user_id']:
-        flash('You cannot edit a sport you did not create')
-        return redirect(url_for('showPlayers', sport_id = sport_id))    
-
-
     else:
         return render_template('editSport.html', sport = editedSport)
 
-#add position (for a sport)
+# add position (for a sport)
 @app.route('/sport/<int:sport_id>/positions/new/', methods = ['GET', 'POST'])
+@login_required
 def addPosition(sport_id):
     sport = session.query(Sport).filter_by(id = sport_id).one()
-
     creator = getUserInfo(sport.user_id)
+
+    # if this user is not the creator of the sport, they cannot delete the positions, redirect to the logged in players page
+    if creator.id != login_session['user_id']:
+        flash('You cannot add a position for a sport you did not create')
+        return redirect(url_for('showPlayers', sport_id = sport_id))
 
     if request.method == 'POST':
         newPosition = Position(name = request.form['name'],
@@ -264,29 +274,24 @@ def addPosition(sport_id):
         session.commit()
         flash('New Position %s Successfully Added' % (newPosition.name))
         return redirect(url_for('showPlayers', sport_id = sport_id))
-    
-    #if not logged in this page should not be viewable, redirect to public page  
-    if 'username' not in login_session:
-        flash('login to add/edit/delete players')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
-        
-    # if this user is not the creator of the sport, they cannot delete the positions, redirect to the logged in players page
-    if creator.id != login_session['user_id']:
-        flash('You cannot add a position for a sport you did not create')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
- 
+     
     else:
         return render_template('newPosition.html', sport_id = sport_id)
 
     
-#edit a position (for a sport)
+# edit a position (for a sport)
 @app.route('/sport/<int:sport_id>/positions/<int:position_id>/edit/', methods = ['GET', 'POST'])
+@login_required
 def editPosition(sport_id, position_id):
     sport = session.query(Sport).filter_by(id = sport_id).one()
     editedPosition =  session.query(Position).filter_by(id = position_id).one()
-
     creator = getUserInfo(sport.user_id)
-    
+        
+    # if this user is not the creator of the sport, they cannot edit the positions, redirect to the logged in players page
+    if creator.id != login_session['user_id']:
+        flash('You cannot edit a position you did not create')
+        return redirect(url_for('showPlayers', sport_id = sport_id))
+
     if request.method == 'POST':
         if request.form['name']:
             editedPosition.name = request.form['name']
@@ -294,32 +299,28 @@ def editPosition(sport_id, position_id):
         session.commit()
         flash('Position Successfully Edited')
         return redirect(url_for('showPlayers', sport_id = sport_id))
-    
-    #if not logged in this page should not be viewable, redirect to public page  
-    if 'username' not in login_session:
-        flash('login to add/edit/delete positions')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
-        
-    # if this user is not the creator of the sport, they cannot edit the positions, redirect to the logged in players page
-    if creator.id != login_session['user_id']:
-        flash('You cannot edit a position you did not create')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
- 
+     
     else:
         return render_template('editPosition.html', sport = sport, position = editedPosition)
 
 
 
 
-#delete position (for a sport)
+# delete position (for a sport)
 @app.route('/sport/<int:sport_id>/positions/<int:position_id>/delete/', methods = ['GET', 'POST'])
+@login_required
 def deletePosition(sport_id, position_id):
     sport = session.query(Sport).filter_by(id = sport_id).one()
     positionToDelete = session.query(Position).filter_by(id = position_id).one()
     creator = getUserInfo(sport.user_id)
 
+    # if this user is not the creator of the sport, they cannot delete the positions, redirect to the logged in players page
+    if creator.id != login_session['user_id']:
+        flash('You cannot delete a position you did not create')
+        return redirect(url_for('showPlayers', sport_id = sport_id))
+
     if request.method == 'POST':
-        #delete players at that position before deleting position 
+        # delete players at that position before deleting position 
 
         playerCount = session.query(Player).filter_by(position_id = position_id).count()
         for i in range(1,playerCount + 1):
@@ -329,22 +330,12 @@ def deletePosition(sport_id, position_id):
                 flash ('%s Successfully Deleted' % playerToDelete.name )
                 session.commit
 
-        #delete position
+        # delete position
         session.delete(positionToDelete)
         flash ('%s Successfully Deleted' % positionToDelete.name)
         session.commit()
         return redirect(url_for('showPlayers', sport_id = sport_id))
     
-    #if not logged in this page should not be viewable, redirect to public page  
-    if 'username' not in login_session:
-        flash('login to add/edit/delete positions')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
-        
-    # if this user is not the creator of the sport, they cannot delete the positions, redirect to the logged in players page
-    if creator.id != login_session['user_id']:
-        flash('You cannot delete a position you did not create')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
-
     else:
         return render_template ('deletePosition.html', sport = sport, position = positionToDelete )
 
@@ -359,22 +350,26 @@ def showPlayers(sport_id):
     positions = session.query(Position).filter_by(
         sport_id = sport_id).all()
 
-#or creator.id != login_session['user_id']  
+ 
     if 'username' not in login_session:
         return render_template('publicplayers.html', players = players, sports = sports, positions = positions)
     else:
         return render_template('players.html', players = players, sports = sports, positions = positions)
         
 
-#add a player
+# add a player
 @app.route('/sport/<int:sport_id>/players/new', methods = ['GET', 'POST'])
+@login_required
 def newPlayer(sport_id):
 
     sport = session.query(Sport).filter_by(id = sport_id).one()
     positions = session.query(Position).filter_by(sport_id = sport_id).all()
 
+    if not positions:
+        flash('At least one position must exist prior to adding a player')
+        return redirect(url_for('showPlayers', sport_id = sport_id))
+
     if request.method == 'POST':
-        
         newPlayer = Player(name=request.form['name'], 
             picture = request.form['picture'],
             position_id = request.form['position'],
@@ -385,19 +380,26 @@ def newPlayer(sport_id):
         session.commit()
         flash('New Player %s Successfully Added' % (newPlayer.name))
         return redirect(url_for('showPlayers', sport_id = sport_id))
-    if not positions:
-        flash('At least one position must exist prior to adding a player')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
+    
+
+    
     else:  
         return render_template('newPlayer.html', sport_id = sport_id, positions = positions)
 
 #edit a player
-@app.route('/sport/<int:sport_id>/players/<int:player_id>/edit/', methods = ['GET','POST'])
+@app.route('/sport/<int:sport_id>/players/<int:player_id>/edit/', methods = ['GET', 'POST'])
+@login_required
 def editPlayer(sport_id, player_id):
+    
     sport = session.query(Sport).filter_by(id = sport_id).one()
     playerToEdit = session.query(Player).filter_by(id = player_id).one()
     positions = session.query(Position).filter_by(sport_id = sport_id).all()
     creator = getUserInfo(playerToEdit.user_id)
+
+    # if this user is not the creator, they cannot edit the player, redirect to the logged in players page
+    if creator.id != login_session['user_id']:
+        flash('You cannot edit a player you did not create')
+        return redirect(url_for('showPlayers', sport_id = sport_id))
 
     if request.method == 'POST':
         if request.form['name']:
@@ -408,42 +410,28 @@ def editPlayer(sport_id, player_id):
             playerToEdit.position_id = request.form['position']
         flash('Played Successfully Edited')
 
-    #if not logged in this page should not be viewable, redirect to public page  
-    if 'username' not in login_session:
-        flash('login to add/edit/delete players')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
-        
-
-    # if this user is not the creator, they cannot edit the player, redirect to the logged in players page
-    if creator.id != login_session['user_id']:
-        flash('You cannot edit a player you did not create')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
-        
     else:
         return render_template('editPlayer.html', sport = sport, player = playerToEdit, positions = positions)
 
 #delete a player
 @app.route('/sport/<int:sport_id>/players/<int:player_id>/delete/', methods = ['GET', 'POST'])
+@login_required
 def deletePlayer(sport_id,player_id):
     sport = session.query(Sport).filter_by(id = sport_id).one()
     playerToDelete = session.query(Player).filter_by(id = player_id).one()
     creator = getUserInfo(playerToDelete.user_id)
+
+    # if this user is not the creator, they cannot delete the player, redirect to the logged in players page
+    if creator.id != login_session['user_id']:
+        flash('You cannot delete a player you did not create')
+        return redirect(url_for('showPlayers', sport_id = sport_id))
 
     if request.method == 'POST':
         session.delete(playerToDelete)
         session.commit
         flash ('%s Successfully Deleted' % playerToDelete.name )
         return redirect(url_for('showPlayers', sport_id = sport_id))
-
-    if 'username' not in login_session:
-        flash('login to add/edit/delete players')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
-        
-    # if this user is not the creator, they cannot delete the player, redirect to the logged in players page
-    if creator.id != login_session['user_id']:
-        flash('You cannot delete a player you did not create')
-        return redirect(url_for('showPlayers', sport_id = sport_id))
-        
+                
     else:
         return render_template ('deletePlayer.html', sport = sport, player = playerToDelete)
 
