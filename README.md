@@ -32,3 +32,14 @@ run the project
 access the project via web browser  
 `http://localhost:5000/`
 
+
+JSON APIs:
+View players for a sport, replace <int:sport_id> with the sport id of choice
+`/sport/<int:sport_id>/players/JSON`
+
+Sports information
+`/sports/JSON`
+
+Poistions for a sport, replace <int:sport_id> with the sport id of choice
+`/sport/<int:sport_id>/players/positions/JSON`
+
